@@ -12,8 +12,8 @@ require (
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
-	github.com/onsi/ginkgo v1.16.2 // indirect
-	github.com/onsi/gomega v1.12.0 // indirect
+	github.com/onsi/ginkgo v1.16.2
+	github.com/onsi/gomega v1.12.0
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

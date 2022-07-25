@@ -156,30 +156,103 @@ var _ = Describe("Cuboid Controller", func() {
 	// IMPLEMENT the tests BELOW
 
 	Describe("Update", func() {
-		PIt("Response HTTP status code 200")
+		var cuboid *Cuboid
 
-		PIt("Returns the updated cuboid")
+		BeforeEach(func() {
+			cuboid = &Cuboid{
+				Width:  1,
+				Height: 1,
+				Depth:  1,
+				BagID:  bag.ID,
+				Bag:    bag,
+			}
+			testutils.AddRecords(cuboid)
+
+		})
+
+		JustBeforeEach(func() {
+			body, _ := testutils.SerializeToString(cuboid)
+			w = testutils.MockRequest(http.MethodPut, "/cuboids/"+fmt.Sprintf("%v", cuboid.ID), &body)
+		})
+
+		It("Response HTTP status code 200", func() {
+			Expect(w.Code).To(Equal(200))
+		})
+
+		It("Returns the updated cuboid", func() {
+			m, _ := testutils.Deserialize(w.Body.String())
+			Expect(m["width"]).ToNot(BeNil())
+			Expect(m["height"]).ToNot(BeNil())
+			Expect(m["depth"]).ToNot(BeNil())
+			Expect(m["volume"]).ToNot(BeNil())
+			Expect(m["bagId"]).To(BeEquivalentTo(bag.ID))
+		})
 
 		Context("When cuboid does not fit into the bag", func() {
-			PIt("Response HTTP status code 400")
+			BeforeEach(func() {
+				cuboid.Width = 99999
+			})
 
-			PIt("Response a JSON with error message 'Insufficient capacity in bag'")
+			It("Response HTTP status code 400", func() {
+				Expect(w.Code).To(Equal(400))
+			})
+
+			It("Response a JSON with error message 'Insufficient capacity in bag'", func() {
+				m, _ := testutils.Deserialize(w.Body.String())
+				Expect(m["error"]).To(Equal("Insufficient capacity in bag"))
+			})
 		})
 
 		Context("When cuboid is not present", func() {
-			PIt("Response HTTP status code 404")
+			BeforeEach(func() {
+				cuboid.ID = 99999
+			})
+
+			It("Response HTTP status code 404", func() {
+				Expect(w.Code).To(Equal(404))
+			})
 		})
 	})
 
 	Describe("Delete", func() {
-		Context("When the cuboid is present", func() {
-			PIt("Response HTTP status code 200")
+		var cuboid *Cuboid
 
-			PIt("Remove the cuboid")
+		BeforeEach(func() {
+			cuboid = &Cuboid{
+				Width:  1,
+				Height: 1,
+				Depth:  1,
+				BagID:  bag.ID,
+				Bag:    bag,
+			}
+			testutils.AddRecords(cuboid)
+
+		})
+
+		JustBeforeEach(func() {
+			body, _ := testutils.SerializeToString(cuboid)
+			w = testutils.MockRequest(http.MethodDelete, "/cuboids/"+fmt.Sprintf("%v", cuboid.ID), &body)
+		})
+
+		Context("When the cuboid is present", func() {
+			It("Response HTTP status code 200", func() {
+				Expect(w.Code).To(Equal(200))
+			})
+
+			It("Remove the cuboid", func() {
+				m, _ := testutils.Deserialize(w.Body.String())
+				Expect(m["status"]).To(Equal("OK"))
+			})
 		})
 
 		Context("When cuboid is not present", func() {
-			PIt("Response HTTP status code 404")
+			BeforeEach(func() {
+				cuboid.ID = 99999
+			})
+
+			It("Response HTTP status code 404", func() {
+				Expect(w.Code).To(Equal(404))
+			})
 		})
 	})
 })
