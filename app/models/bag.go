@@ -8,21 +8,27 @@ import (
 type Bag struct {
 	Model
 
-	Title  string `validate:"required,max=255"`
-	Volume uint   `validate:"gt=0"`
+	Title   string `validate:"required,max=255"`
+	Volume  uint   `validate:"gt=0"`
+	Disable bool
 
 	Cuboids []Cuboid
 }
 
 func (b *Bag) PayloadVolume() uint {
-	return 0
+	var v uint
+	for _, c := range b.Cuboids {
+		v += c.PayloadVolume()
+	}
+	return v
 }
 
 func (b *Bag) AvailableVolume() uint {
-	return 0
+	return b.Volume - b.PayloadVolume()
 }
 
 func (b *Bag) SetDisabled(value bool) {
+	b.Disable = value
 }
 
 func (b *Bag) MarshalJSON() ([]byte, error) {
@@ -32,9 +38,10 @@ func (b *Bag) MarshalJSON() ([]byte, error) {
 		Volume          uint     `json:"volume"`
 		PayloadVolume   uint     `json:"payloadVolume"`
 		AvailableVolume uint     `json:"availableVolume"`
+		Disable         bool     `json:"disable"`
 		Cuboids         []Cuboid `json:"cuboids"`
 	}{
-		b.ID, b.Title, b.Volume, b.PayloadVolume(), b.AvailableVolume(), b.Cuboids,
+		b.ID, b.Title, b.Volume, b.PayloadVolume(), b.AvailableVolume(), b.Disable, b.Cuboids,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal Bag. %w", err)
